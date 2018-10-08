@@ -40,10 +40,10 @@ object Olympus extends ServerApp {
     args match {
       case List("testrun") =>
         val description = "Storage tokens for backup Olympus server at 127.0.0.1"
-        val eclairProvider = EclairProvider(500000L, 50, description, "http://127.0.0.1:8080", "pass")
+        val eclairProvider = EclairProvider(500000L, 50, description, "http://127.0.0.1:8180", "pass")
         values = Vals(privKey = "33337641954423495759821968886025053266790003625264088739786982511471995762588",
-          btcApi = "http://foo:bar@127.0.0.1:18332", zmqApi = "tcp://127.0.0.1:29000", eclairSockIp = "127.0.0.1",
-          eclairSockPort = 9735, eclairNodeId = "0218bc75cba78d378d864a0f41d4ccd67eb1eaa829464d37706702003069c003f8",
+          btcApi = "http://foo:bar@127.0.0.1:17332", zmqApi = "tcp://127.0.0.1:29001", eclairSockIp = "127.0.0.1",
+          eclairSockPort = 9835, eclairNodeId = "0218bc75cba78d378d864a0f41d4ccd67eb1eaa829464d37706702003069c003f8",
           rewindRange = 14, ip = "127.0.0.1", port = 9003, eclairProvider, minCapacity = 50000L,
           sslFile = "/home/anton/Desktop/olympus/keystore.jks", sslPass = "pass123")
 
@@ -55,8 +55,9 @@ object Olympus extends ServerApp {
     LNParams.setup(random getBytes 32)
     val httpLNCloudServer = new Responder
     val postLift = UrlFormLifter(httpLNCloudServer.http)
-    val sslInfo = StoreInfo(Paths.get(values.sslFile).toAbsolutePath.toString, values.sslPass)
-    BlazeBuilder.withSSL(sslInfo, values.sslPass).bindHttp(values.port, values.ip).mountService(postLift).start
+    BlazeBuilder.bindHttp(values.port, values.ip).mountService(postLift).start
+//    val sslInfo = StoreInfo(Paths.get(values.sslFile).toAbsolutePath.toString, values.sslPass)
+//    BlazeBuilder.withSSL(sslInfo, values.sslPass).bindHttp(values.port, values.ip).mountService(postLift).start
   }
 }
 

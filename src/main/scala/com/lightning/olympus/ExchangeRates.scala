@@ -10,14 +10,8 @@ import com.lightning.walletapp.ln.Tools.none
 import org.knowm.xchange.ExchangeFactory
 import scala.util.Try
 
-import org.knowm.xchange.bitcoinaverage.BitcoinAverageExchange
-import org.knowm.xchange.bitfinex.v1.BitfinexExchange
-import org.knowm.xchange.bitstamp.BitstampExchange
-import org.knowm.xchange.paymium.PaymiumExchange
-import org.knowm.xchange.kraken.KrakenExchange
+import org.knowm.xchange.coinmarketcap.CoinMarketCapExchange
 import org.knowm.xchange.currency.CurrencyPair
-import org.knowm.xchange.quoine.QuoineExchange
-import org.knowm.xchange.gdax.GDAXExchange
 
 
 class AveragePrice(val pair: CurrencyPair, val code: String) {
@@ -44,27 +38,9 @@ class AveragePrice(val pair: CurrencyPair, val code: String) {
 }
 
 class ExchangeRates {
-  val usd = new AveragePrice(BTC_USD, "dollar") {
-    override val exchanges = classOf[BitstampExchange].getName ::
-      classOf[BitfinexExchange].getName :: classOf[KrakenExchange].getName ::
-      classOf[BitcoinAverageExchange].getName :: classOf[GDAXExchange].getName :: Nil
-  }
-
-  val eur = new AveragePrice(BTC_EUR, "euro") {
-    override val exchanges = classOf[PaymiumExchange].getName ::
-      classOf[KrakenExchange].getName :: classOf[BitstampExchange].getName ::
-      classOf[BitcoinAverageExchange].getName :: classOf[GDAXExchange].getName :: Nil
-  }
-
-  val cny = new AveragePrice(BTC_CNY, "yuan") {
-    override val exchanges = classOf[BitcoinAverageExchange].getName :: Nil
-  }
-
-  val jpy = new AveragePrice(BTC_JPY, "yen") {
-    override val exchanges = classOf[KrakenExchange].getName ::
-      classOf[BitcoinAverageExchange].getName ::
-      classOf[QuoineExchange].getName :: Nil
-  }
+  val currencies = new AveragePrice(CurrencyPair.BCA_USD, "dollar") {
+    override val exchanges = classOf[CoinMarketCapExchange].getName :: Nil
+  } :: Nil
 
   def displayState = for {
     average: AveragePrice <- currencies
@@ -72,7 +48,6 @@ class ExchangeRates {
     humanHistory = history.prices mkString "\r\n-- "
   } yield s"${average.pair} $exchange \r\n-- $humanHistory"
 
-  val currencies = List(usd, eur, jpy, cny)
   def update(some: Any) = for (average <- currencies) average.update
   retry(obsOnIO map update, pickInc, 4 to 6).repeatWhen(_ delay 30.minutes)
     .doOnNext(_ => Tools log "Exchange rates were updated").subscribe(none)
