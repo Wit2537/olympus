@@ -9,6 +9,7 @@ import scala.collection.JavaConverters._
 import com.lightning.walletapp.ln.wire._
 import com.lightning.walletapp.lnutils.ImplicitJsonFormats._
 import com.lightning.walletapp.ln.wire.LightningMessageCodecs._
+
 import java.net.{InetAddress, InetSocketAddress}
 import org.http4s.{HttpService, Response}
 import rx.lang.scala.{Observable => Obs}
@@ -16,6 +17,7 @@ import akka.actor.{ActorSystem, Props}
 
 import com.lightning.olympus.database.MongoDatabase
 import com.lightning.walletapp.lnutils.InRoutesPlus
+import javax.crypto.Cipher.getMaxAllowedKeyLength
 import org.http4s.server.middleware.UrlFormLifter
 import com.lightning.walletapp.ln.Tools.random
 import com.lightning.olympus.zmq.ZMQSupervisor
@@ -36,6 +38,8 @@ import java.nio.file.Paths
 object Olympus extends ServerApp {
   type ProgramArguments = List[String]
   def server(args: ProgramArguments) = {
+    // Check that we can decrypt punishment blobs
+    require(getMaxAllowedKeyLength("AES") >= 256)
 
     args match {
       case List("testrun") =>
